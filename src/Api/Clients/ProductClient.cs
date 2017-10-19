@@ -44,5 +44,14 @@ namespace Boukenken.Gdax
                 new ApiRequest(HttpMethod.Get, $"/products/{productId}/book?level={level}")
             );
         }
+
+        public async Task<ApiResponse<string>> GetProductCandleAsync(string productId, int granularity = 60)
+        {
+            var candles = await this.GetResponseArrayAsync<string>(
+                new ApiRequest(HttpMethod.Get, $"/products/{productId}/candles?granularity={granularity}")
+            );
+            string[] candlesArray = candles.Value.Split(',');
+            return candles;
+        }
     }
 }

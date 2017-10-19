@@ -11,7 +11,7 @@ namespace Boukenken.Gdax
     {
         Task<ApiResponse<IEnumerable<Order>>> GetOpenOrdersAsync();
         Task<ApiResponse<IEnumerable<Guid>>> CancelOpenOrdersAsync(string productId = null);
-        Task<ApiResponse<Order>> PlaceOrderAsync(string side, string productId, decimal size, decimal price, string type, string cancelAfter = null, string timeInForce = null);
+        Task<ApiResponse<Order>> PlaceOrderAsync(string side, string productId, decimal size, decimal price, string type, bool postOnly, string cancelAfter = null, string timeInForce = null);
     }
 
     public class OrderClient : GdaxClient
@@ -21,7 +21,7 @@ namespace Boukenken.Gdax
         {
         }
 
-        public async Task<ApiResponse<Order>> PlaceOrderAsync(string side, string productId, decimal size, decimal price, string type, string cancelAfter = null, string timeInForce = null)
+        public async Task<ApiResponse<Order>> PlaceOrderAsync(string side, string productId, decimal size, decimal price, string type, bool postOnly = false, string cancelAfter = null, string timeInForce = null)
         {
             return await this.GetResponseAsync<Order>(
                 new ApiRequest(HttpMethod.Post, "/orders", Serialize(new {
@@ -31,7 +31,8 @@ namespace Boukenken.Gdax
                     price = price,
                     product_id = productId,
                     cancel_after = cancelAfter,
-                    time_in_force = timeInForce
+                    time_in_force = timeInForce,
+                    post_only = postOnly
                 }))
             );
         }
@@ -42,6 +43,14 @@ namespace Boukenken.Gdax
                 new ApiRequest(HttpMethod.Get, "/orders")
             );
         }
+
+        public async Task<ApiResponse<Order>> GetOrderAsync(string orderId)
+        {
+            return await this.GetResponseAsync<Order>(
+                new ApiRequest(HttpMethod.Get, $"/orders/{orderId}")
+            );
+        }
+
 
         public async Task<ApiResponse<IEnumerable<Guid>>> CancelOpenOrdersAsync(string productId = null)
         {

@@ -5,6 +5,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace Boukenken.Gdax
 {
@@ -34,11 +36,24 @@ namespace Boukenken.Gdax
             );
         }
 
+        public async Task<ApiResponse<TResponse>> GetResponseArrayAsync<TResponse>(ApiRequest request)
+        {
+            var httpResponse = await GetResponseAsync(request);
+            var contentBody = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return new ApiResponse<TResponse>(
+                httpResponse.Headers.ToArray(),
+                httpResponse.StatusCode,
+                contentBody,
+                DeserializeArray<TResponse>(contentBody)
+            );
+        }
+
         public async Task<HttpResponseMessage> GetResponseAsync(ApiRequest request)
         {
             var httpRequest = BuildRequestMessagee(request);
             httpRequest.Headers.Add("User-Agent", "GdaxClient (+https://sefbkn.github.io/)");
-            return await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+            return response;
         }
 
         private HttpRequestMessage BuildRequestMessagee(ApiRequest request)
@@ -71,6 +86,19 @@ namespace Boukenken.Gdax
         protected virtual T Deserialize<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json);
+        }
+
+        protected virtual T DeserializeArray<T>(string array)
+        {
+            //var splitJArray = JArray.Parse(array);
+            //List<object> arrayL = new List<object>();
+            //foreach(JObject j in splitJArray.Children<>)
+            //{
+
+            //}
+            //return arrayL.Cast<T>();
+            return default(T);
+            //return (T)Convert.ChangeType(array, typeof(T));
         }
     }
 }
